@@ -1,0 +1,24 @@
+Stream,Depth
+Metadata Attribute,Value
+Frame Counter,123
+Frame Timestamp,515822054
+Sensor Timestamp,515815011
+Actual Exposure,14086
+Gain Level,16
+Auto Exposure,1
+Time Of Arrival,1749676931459
+Backend Timestamp,1749676931452
+Actual Fps,29980
+Frame Laser Power,150
+Frame Laser Power Mode,1
+Exposure Priority,1
+Exposure Roi Left,80
+Exposure Roi Right,560
+Exposure Roi Top,60
+Exposure Roi Bottom,420
+Frame Emitter Mode,1
+Raw Frame Size,614400
+Gpio Input Data,251
+Sequence Name,0
+Sequence Id,0
+Sequence Size,0

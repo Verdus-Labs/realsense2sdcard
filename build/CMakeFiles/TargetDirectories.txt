@@ -1,0 +1,4 @@
+/home/rg/Desktop/scripts/realsense2sdcard/build/CMakeFiles/one-frame-save.dir
+/home/rg/Desktop/scripts/realsense2sdcard/build/CMakeFiles/capture-10s.dir
+/home/rg/Desktop/scripts/realsense2sdcard/build/CMakeFiles/edit_cache.dir
+/home/rg/Desktop/scripts/realsense2sdcard/build/CMakeFiles/rebuild_cache.dir
