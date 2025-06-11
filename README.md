@@ -19,15 +19,38 @@ A Python program that captures synchronized RGB and Depth data from Intel RealSe
 
 ## Installation
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 1. Install Basic Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-2. **Install Intel RealSense SDK** (if not already installed):
-   - **macOS**: `brew install librealsense`
-   - **Ubuntu**: Follow [official installation guide](https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md)
-   - **Windows**: Download from [Intel's website](https://www.intelrealsense.com/sdk-2/)
+### 2. Install Intel RealSense SDK
+
+#### **Raspberry Pi** (Recommended Method)
+```bash
+# Install librealsense2 system package
+sudo apt update
+sudo apt install -y librealsense2-dev librealsense2-utils
+
+# Install Python bindings
+pip install pyrealsense2
+
+# If pip install fails, try building from source:
+# git clone https://github.com/IntelRealSense/librealsense.git
+# cd librealsense && mkdir build && cd build
+# cmake .. -DBUILD_PYTHON_BINDINGS=bool:true -DPYTHON_EXECUTABLE=$(which python3)
+# make -j4 && sudo make install
+```
+
+#### **Other Platforms**
+- **macOS**: `brew install librealsense`
+- **Ubuntu**: Follow [official installation guide](https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md)
+- **Windows**: Download from [Intel's website](https://www.intelrealsense.com/sdk-2/)
+
+#### **Alternative: Install via pip** (most systems except RPi)
+```bash
+pip install pyrealsense2>=2.54.1
+```
 
 ## Usage
 
