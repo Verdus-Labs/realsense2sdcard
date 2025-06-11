@@ -1,4 +1,0 @@
-# For most systems (install pyrealsense2 separately on Raspberry Pi)
-# pyrealsense2>=2.54.1
-opencv-python>=4.8.0
-numpy>=1.24.0 
