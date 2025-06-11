@@ -108,9 +108,11 @@ int main(int argc, char * argv[]) try
                     
                     // Save colorized depth for visualization
                     auto colorized_depth = color_map.process(frame);
-                    std::string depth_color_filename = create_filename("captured_data/depth", "depth_colorized", frame_count, timestamp, ".png");
-                    stbi_write_png(depth_color_filename.c_str(), colorized_depth.get_width(), colorized_depth.get_height(),
-                                   colorized_depth.get_bytes_per_pixel(), colorized_depth.get_data(), colorized_depth.get_stride_in_bytes());
+                    if (auto colorized_vf = colorized_depth.as<rs2::video_frame>()) {
+                        std::string depth_color_filename = create_filename("captured_data/depth", "depth_colorized", frame_count, timestamp, ".png");
+                        stbi_write_png(depth_color_filename.c_str(), colorized_vf.get_width(), colorized_vf.get_height(),
+                                       colorized_vf.get_bytes_per_pixel(), colorized_vf.get_data(), colorized_vf.get_stride_in_bytes());
+                    }
                     
                     // Save depth metadata
                     std::string depth_meta_filename = create_filename("captured_data/metadata", "depth", frame_count, timestamp, "_metadata.csv");
