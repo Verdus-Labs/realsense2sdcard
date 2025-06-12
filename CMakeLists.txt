@@ -18,5 +18,10 @@ add_executable(capture-10s 10s-save.cpp)
 set_property(TARGET capture-10s PROPERTY CXX_STANDARD 11)
 target_link_libraries(capture-10s ${realsense2_LIBRARY})
 
+# Add executable for rpi_streamer
+add_executable(rpi_streamer rpi_streamer.cpp)
+set_property(TARGET rpi_streamer PROPERTY CXX_STANDARD 11)
+target_link_libraries(rpi_streamer ${realsense2_LIBRARY})
+
 # Include current directory for stb_image_write.h
 include_directories(.)
