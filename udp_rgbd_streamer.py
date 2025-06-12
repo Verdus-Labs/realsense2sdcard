@@ -7,14 +7,14 @@ import time
 import sys
 
 # Settings
-WIDTH = 640
-HEIGHT = 480
+WIDTH = 424
+HEIGHT = 240
 FPS = 30
 PORT = 9999
 
 if len(sys.argv) != 2:
     print(f"Usage: python {sys.argv[0]} <receiver_ip>")
-    sys.exit(1)s
+    sys.exit(1)
 
 receiver_ip = sys.argv[1]
 
