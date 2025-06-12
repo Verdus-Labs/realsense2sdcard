@@ -13,24 +13,24 @@ print(f"Listening on UDP port {PORT}")
 frame_buffer = {}
 last_displayed = -1
 
+HEADER_SIZE = 21
+
 while True:
     packet, addr = sock.recvfrom(65536)
-    if len(packet) < 19:
+    if len(packet) < HEADER_SIZE:
         print("Packet too small")
         continue
     # Header: frame_id(uint32), type(uint8), timestamp(uint64), width(uint16), height(uint16), data_size(uint32)
-    frame_id, typ, timestamp, width, height, data_size = struct.unpack('<IBQHHI', packet[:19])
-    data = packet[19:19+data_size]
+    frame_id, typ, timestamp, width, height, data_size = struct.unpack('<IBQHHI', packet[:HEADER_SIZE])
+    data = packet[HEADER_SIZE:HEADER_SIZE+data_size]
     if len(data) != data_size:
         print("Incomplete packet")
         continue
     if frame_id not in frame_buffer:
         frame_buffer[frame_id] = {}
     if typ == 0:
-        # RGB
+        # RGB (display as received, no color conversion)
         color = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
-        if color is not None:
-            color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
         frame_buffer[frame_id]['rgb'] = color
     elif typ == 1:
         # Depth
@@ -42,8 +42,11 @@ while True:
         cv2.imshow('RGB', frame_buffer[frame_id]['rgb'])
         d = frame_buffer[frame_id]['depth']
         if d is not None:
-            d_show = (d / d.max() * 255).astype(np.uint8) if d.max() > 0 else d.astype(np.uint8)
-            cv2.imshow('Depth', d_show)
+            # Normalize and apply heatmap
+            d_norm = cv2.normalize(d, None, 255, 0, cv2.NORM_MINMAX)
+            d_norm = d_norm.astype(np.uint8)
+            d_heat = cv2.applyColorMap(d_norm, cv2.COLORMAP_JET)
+            cv2.imshow('Depth', d_heat)
         if cv2.waitKey(1) == 27:
             break
         last_displayed = frame_id
