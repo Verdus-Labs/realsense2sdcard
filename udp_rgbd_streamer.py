@@ -45,26 +45,28 @@ try:
         color = np.asanyarray(color_frame.get_data())  # HWC, RGB
         depth = np.asanyarray(depth_frame.get_data())  # HW, uint16
 
-        # Compress RGB
+        # RGB as JPEG
         _, rgb_jpeg = cv2.imencode('.jpg', cv2.cvtColor(color, cv2.COLOR_RGB2BGR), [int(cv2.IMWRITE_JPEG_QUALITY), 80])
         rgb_bytes = rgb_jpeg.tobytes()
-        depth_bytes = depth.tobytes()
-
-        # Header: frame_id(uint32), timestamp(uint64), width(uint16), height(uint16), rgb_size(uint32), depth_size(uint32)
-        header = struct.pack('<I Q H H I I',
-                            frame_id,
-                            int(time.time() * 1e6),
-                            WIDTH, HEIGHT,
-                            len(rgb_bytes), len(depth_bytes))
-        packet = header + rgb_bytes + depth_bytes
-
-        if len(packet) > 65507:
-            print(f"Warning: Frame {frame_id} too large for UDP packet ({len(packet)} bytes)")
-            frame_id += 1
-            continue
-
-        sock.sendto(packet, (receiver_ip, PORT))
-        print(f"Sent frame {frame_id} | RGB: {len(rgb_bytes)} | Depth: {len(depth_bytes)} | Total: {len(packet)} bytes")
+        # Depth as PNG
+        _, depth_png = cv2.imencode('.png', depth)
+        depth_bytes = depth_png.tobytes()
+        timestamp = int(time.time() * 1e6)
+        # Header: frame_id(uint32), type(uint8), timestamp(uint64), width(uint16), height(uint16), data_size(uint32)
+        rgb_header = struct.pack('<IBQHHI', frame_id, 0, timestamp, WIDTH, HEIGHT, len(rgb_bytes))
+        depth_header = struct.pack('<IBQHHI', frame_id, 1, timestamp, WIDTH, HEIGHT, len(depth_bytes))
+        # Send RGB
+        if len(rgb_header) + len(rgb_bytes) <= 65507:
+            sock.sendto(rgb_header + rgb_bytes, (receiver_ip, PORT))
+            print(f"Sent RGB frame {frame_id} | {len(rgb_bytes)} bytes")
+        else:
+            print(f"RGB frame {frame_id} too large for UDP packet ({len(rgb_bytes)} bytes)")
+        # Send Depth
+        if len(depth_header) + len(depth_bytes) <= 65507:
+            sock.sendto(depth_header + depth_bytes, (receiver_ip, PORT))
+            print(f"Sent Depth frame {frame_id} | {len(depth_bytes)} bytes")
+        else:
+            print(f"Depth frame {frame_id} too large for UDP packet ({len(depth_bytes)} bytes)")
         frame_id += 1
 except KeyboardInterrupt:
     print("Stopped.")
