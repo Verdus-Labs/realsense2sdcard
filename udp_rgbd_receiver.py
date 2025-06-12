@@ -15,6 +15,49 @@ last_displayed = -1
 
 HEADER_SIZE = 21
 
+def load_yolo():
+    net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yv3_grapes.weights')
+    with open('obj.names', 'r') as f:
+        classes = [line.strip() for line in f.readlines()]
+    return net, classes
+
+yolo_net, yolo_classes = load_yolo()
+
+def detect_and_draw(frame, net, classes):
+    blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
+    net.setInput(blob)
+    outs = net.forward(net.getUnconnectedOutLayersNames())
+    height, width = frame.shape[:2]
+    class_ids = []
+    confidences = []
+    boxes = []
+    for out in outs:
+        for detection in out:
+            scores = detection[5:]
+            class_id = np.argmax(scores)
+            confidence = scores[class_id]
+            if confidence > 0.5:
+                center_x = int(detection[0] * width)
+                center_y = int(detection[1] * height)
+                w = int(detection[2] * width)
+                h = int(detection[3] * height)
+                x = int(center_x - w / 2)
+                y = int(center_y - h / 2)
+                class_ids.append(class_id)
+                confidences.append(float(confidence))
+                boxes.append([x, y, w, h])
+    indices = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+    for i in indices:
+        i = i[0] if isinstance(i, (list, np.ndarray)) else i
+        box = boxes[i]
+        x, y, w, h = box
+        label = classes[class_ids[i]]
+        confidence = confidences[i]
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.circle(frame, ((x + int(w / 2)), (y + int(h / 2))), 5, (0, 0, 255), -1)
+        cv2.putText(frame, f'{label}: {confidence:.2f}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    return frame
+
 while True:
     packet, addr = sock.recvfrom(65536)
     if len(packet) < HEADER_SIZE:
@@ -39,7 +82,10 @@ while True:
     # Display if both are present and not already displayed
     if ('rgb' in frame_buffer[frame_id] and 'depth' in frame_buffer[frame_id]
         and frame_id > last_displayed):
-        cv2.imshow('RGB', frame_buffer[frame_id]['rgb'])
+        rgb_disp = frame_buffer[frame_id]['rgb']
+        if rgb_disp is not None:
+            rgb_disp = detect_and_draw(rgb_disp, yolo_net, yolo_classes)
+            cv2.imshow('RGB', rgb_disp)
         d = frame_buffer[frame_id]['depth']
         if d is not None:
             # Normalize and apply heatmap
